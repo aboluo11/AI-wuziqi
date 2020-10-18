@@ -100,19 +100,16 @@ class Game:
         value, policy = self.alpha_beta_prune(-sys.maxsize, sys.maxsize, self.n_look_forward)
         return policy
 
-    def alpha_beta_prune(self, alpha, beta, depth) -> Tuple[int, Tuple[int, int]]:        
+    def alpha_beta_prune(self, alpha, beta, depth) -> Tuple[int, Tuple[int, int]]:
         policys = []
         scores = []
-        for x in range(BoardSize):
-            for y in range(BoardSize):
-                if self.state[x, y] != NoChess or not self.valid_pos(x, y):
-                    continue
-                self.state[x, y] = self.curr_player.chess
-                self.curr_player.reverse()
-                scores.append(self.evaluate())
-                policys.append((x, y))
-                self.curr_player.reverse()
-                self.state[x, y] = NoChess
+        for x, y in self.valid_pos():
+            self.state[x, y] = self.curr_player.chess
+            self.curr_player.reverse()
+            scores.append(self.evaluate())
+            policys.append((x, y))
+            self.curr_player.reverse()
+            self.state[x, y] = NoChess
         indices = [i for i, x in sorted(enumerate(scores), key=lambda x: x[1])]
         policys = [policys[i] for i in indices]
         scores = [scores[i] for i in indices]
@@ -203,11 +200,16 @@ class Game:
                     (fragments[:, 0]!=for_chess) & (fragments[:, -1]!=for_chess) & (fragments[:, 0]!=fragments[:, -1])).sum())
         return res
 
-    def valid_pos(self, x, y):
+    def valid_pos(self):
         state = np.pad(self.state, pad_width=1, mode='constant', constant_values=NoChess)
-        x = x + 1
-        y = y + 1
-        return np.any(state[[x-1,x+1], y-1:y+2] != NoChess) | np.any(state[x-1:x+2, [y-1,y+1]] != NoChess)
+        index = np.array([np.arange(0, BoardSize), np.arange(1, BoardSize+1), np.arange(2, BoardSize+2)])
+        left = state[index, :-2]
+        right = state[index, 2:]
+        top = state[:-2, index]
+        bottom = state[2:, index]
+        valid_index = np.nonzero(((left != NoChess).any(axis=0) | (right != NoChess).any(axis=0) | \
+            (top != NoChess).any(axis=1) | (bottom != NoChess).any(axis=1)) & (state[1:-1, 1:-1] == NoChess))
+        return [(x, y) for x, y in zip(valid_index[0], valid_index[1])]
 
     def checkboard_pos(self, mouse_x, mouse_y):
         x = round(abs(mouse_x - StartPos) / Interval)
