@@ -1,6 +1,4 @@
-from numpy.core.numeric import indices
 import pygame
-from pygame import *
 import numpy as np
 import time
 from typing import Tuple
@@ -11,7 +9,7 @@ def record_time(f):
         t1 = time.time()
         res = f(*args, **kwargs)
         t2 = time.time()
-        print(f"time of ai play: {t2-t1}")
+        print(f"time of policy: {t2-t1}")
         return res
     return wrapper
 
@@ -72,9 +70,10 @@ class Game:
         while True:
             mouse_x, mouse_y = pygame.mouse.get_pos()
             event = pygame.event.wait()
-            if event.type == QUIT:
+            if event.type == pygame.QUIT:
                 pygame.quit()
-            elif event.type == MOUSEBUTTONDOWN:
+                break
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button != 1:
                     continue
                 if self.in_checkerboard(mouse_x, mouse_y):
