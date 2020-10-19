@@ -156,16 +156,16 @@ class Game:
         white_n_wulianzhu, black_n_wulianzhu = self.n_wulianzhu()
         white_score += self.weights['wulianzhu'] * white_n_wulianzhu
         black_score += self.weights['wulianzhu'] * black_n_wulianzhu
-        for i in range(3, 5):
+        for i in range(2, 5):
             white_n_live, white_n_dead, black_n_live, black_n_dead = self.n_live_dead(i)
             white_score += self.weights[f'live_{i}'] * white_n_live
             white_score += self.weights[f'dead_{i}'] * white_n_dead
             black_score += self.weights[f'live_{i}'] * black_n_live
             black_score += self.weights[f'dead_{i}'] * black_n_dead
         if self.curr_player.player == WhitePlayer:
-            return white_score * 10 - black_score
+            return white_score * 5 - black_score
         else:
-            return white_score - black_score * 10
+            return white_score - black_score * 5
 
     def n_wulianzhu(self) -> int:
         fragments = []
