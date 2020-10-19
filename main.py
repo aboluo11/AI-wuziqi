@@ -17,6 +17,7 @@ def record_time(f):
 
 GameSize = (700, 700)
 BackgroundColor = (213, 184, 154)
+NewChessFrameColor = (0, 255, 0)
 Black = (0, 0, 0)
 White = (255, 255, 255)
 StartPos = 50
@@ -24,6 +25,7 @@ Interval = 40
 BoardSize = 16
 EndPos = StartPos + (BoardSize - 1) * Interval
 ChessRadius = 10
+NewChessFrameRadius = 12
 NoChess = 0
 BlackChess = 1
 WhiteChess = 2
@@ -82,17 +84,13 @@ class Game:
                     self.draw_chess(
                         checkerboard_x = y,
                         checkerboard_y = x,
-                        color = self.curr_player.color,
                     )
-                    self.state[x, y] = self.curr_player.chess
                     self.curr_player.reverse()
                     ai_x, ai_y = self.policy()
                     self.draw_chess(
                         checkerboard_x = ai_y,
                         checkerboard_y = ai_x,
-                        color = self.curr_player.color,
                     )
-                    self.state[ai_x, ai_y] = self.curr_player.chess
                     self.curr_player.reverse()
 
     @record_time
@@ -216,7 +214,7 @@ class Game:
         y = round(abs(mouse_y - StartPos) / Interval)
         return x, y
 
-    def surface_pos(self, checkerboard_x, checkerboard_y):
+    def surface_pos(self, checkerboard_x, checkerboard_y) -> Tuple[int, int]:
         x = checkerboard_x * Interval + StartPos
         y = checkerboard_y * Interval + StartPos
         return x, y
@@ -225,8 +223,18 @@ class Game:
         return mouse_x >= StartPos - Interval/2 and mouse_x <= EndPos + Interval/2 \
             and mouse_y >= StartPos - Interval/2 and mouse_y <= EndPos + Interval/2
 
-    def draw_chess(self, checkerboard_x, checkerboard_y, color):
-        pygame.draw.circle(self.surface, color, self.surface_pos(checkerboard_x, checkerboard_y), ChessRadius)
+    def draw_chess(self, checkerboard_x, checkerboard_y):
+        self.state[checkerboard_y, checkerboard_x] = self.curr_player.chess
+        self.surface.fill(BackgroundColor)
+        self.draw_checkerboard()
+        for for_chess in (WhiteChess, BlackChess):
+            index = np.nonzero(self.state == for_chess)
+            for y, x in zip(index[0], index[1]):
+                x, y = self.surface_pos(x, y)
+                pygame.draw.circle(self.surface, White if for_chess==WhiteChess else Black, (x, y), ChessRadius)
+        x, y = self.surface_pos(checkerboard_x, checkerboard_y)
+        pygame.draw.rect(self.surface, NewChessFrameColor, \
+            (x-NewChessFrameRadius, y-NewChessFrameRadius, 2*NewChessFrameRadius, 2*NewChessFrameRadius), 2)
         pygame.display.update()
 
     def draw_checkerboard(self):
